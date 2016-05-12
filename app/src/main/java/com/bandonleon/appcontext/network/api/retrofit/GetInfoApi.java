@@ -1,13 +1,12 @@
-package com.bandonleon.appcontext.network.retrofit;
+package com.bandonleon.appcontext.network.api.retrofit;
 
-import com.bandonleon.appcontext.network.Api;
+import com.bandonleon.appcontext.network.api.Api;
 
 import com.google.gson.JsonObject;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-import retrofit2.Response;
 
 /**
  * Created by dombhuphaibool on 5/11/16.

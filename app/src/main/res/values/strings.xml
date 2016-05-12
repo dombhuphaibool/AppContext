@@ -1,8 +1,18 @@
 <resources>
     <string name="app_name">AppContext</string>
+
+    <string name="api">Api</string>
+    <string name="image">Image</string>
+
     <string name="call">Call</string>
+    <string name="load">Load</string>
     <string name="waiting">Select api type and press Call</string>
 
     <string name="network_api_volley">Volley</string>
     <string name="network_api_retrofit">Retrofit</string>
+
+    <string name="image_loader_volley">Volley</string>
+    <string name="image_loader_piccaso">Picasso</string>
+    <string name="image_loader_glide">Glide</string>
+    <string name="image_loader_fresco">Fresco</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.bandonleon.appcontext.network;
+package com.bandonleon.appcontext.network.api;
 
 import org.json.JSONObject;
 
