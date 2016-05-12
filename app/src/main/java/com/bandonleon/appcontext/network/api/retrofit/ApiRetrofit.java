@@ -1,8 +1,8 @@
-package com.bandonleon.appcontext.network.retrofit;
+package com.bandonleon.appcontext.network.api.retrofit;
 
 import android.net.Uri;
 
-import com.bandonleon.appcontext.network.Api;
+import com.bandonleon.appcontext.network.api.Api;
 import com.google.gson.JsonObject;
 
 import org.json.JSONException;

@@ -3,8 +3,10 @@ package com.bandonleon.appcontext.app;
 import android.app.Application;
 import android.content.Context;
 
-import com.bandonleon.appcontext.network.Api;
-import com.bandonleon.appcontext.network.volley.ApiVolley;
+import com.bandonleon.appcontext.network.api.Api;
+import com.bandonleon.appcontext.network.api.volley.ApiVolley;
+import com.bandonleon.appcontext.network.image.ImageLoader;
+import com.bandonleon.appcontext.network.image.volley.VolleyImageLoader;
 
 /**
  * Created by dombhuphaibool on 5/10/16.
@@ -43,6 +45,11 @@ public class CustomApplication extends Application {
             @Override
             protected Api createApi() {
                 return new ApiVolley(getApplicationContext());
+            }
+
+            @Override
+            protected ImageLoader createImageLoader() {
+                return new VolleyImageLoader(getApplicationContext());
             }
         };
     }

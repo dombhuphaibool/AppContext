@@ -18,6 +18,14 @@ public class ExchangeableApiApplication extends CustomApplication {
         }
     }
 
+    public static void switchImageLoader(String imageLoaderTypeStr) {
+        CustomContext customContext = CustomApplication.getCustomContext();
+        if (customContext instanceof ExchangeableApiContext) {
+            ExchangeableApiContext exchangeableApiContext = (ExchangeableApiContext) customContext;
+            exchangeableApiContext.setImageLoaderType(imageLoaderTypeStr);
+        }
+    }
+
     @Override
     protected CustomContext createCustomContext(Context base) {
         return new ExchangeableApiContext(base);

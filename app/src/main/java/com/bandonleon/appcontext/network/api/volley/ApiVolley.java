@@ -1,4 +1,4 @@
-package com.bandonleon.appcontext.network.volley;
+package com.bandonleon.appcontext.network.api.volley;
 
 import android.content.Context;
 import android.net.Uri;
@@ -9,7 +9,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.bandonleon.appcontext.network.Api;
+import com.bandonleon.appcontext.network.api.Api;
 
 import org.json.JSONObject;
 

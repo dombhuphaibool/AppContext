@@ -4,4 +4,11 @@
         <item>@string/network_api_volley</item>
         <item>@string/network_api_retrofit</item>
     </string-array>
+
+    <string-array name="image_loader">
+        <item>@string/image_loader_volley</item>
+        <item>@string/image_loader_piccaso</item>
+        <item>@string/image_loader_glide</item>
+        <item>@string/image_loader_fresco</item>
+    </string-array>
 </resources>
