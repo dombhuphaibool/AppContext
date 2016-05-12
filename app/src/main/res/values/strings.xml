@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AppContext</string>
+    <string name="call">Call</string>
+    <string name="waiting">Select api type and press Call</string>
+
+    <string name="network_api_volley">Volley</string>
+    <string name="network_api_retrofit">Retrofit</string>
+</resources>
