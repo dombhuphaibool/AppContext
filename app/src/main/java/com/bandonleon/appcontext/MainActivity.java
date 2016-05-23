@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.bandonleon.appcontext.app.CustomApplication;
 import com.bandonleon.appcontext.app.NetworkUtil;
 import com.bandonleon.appcontext.app.exchangeable.ExchangeableApiApplication;
 import com.bandonleon.appcontext.network.api.Api;
@@ -25,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        CustomApplication.initCustomContext();
+        
         setupApiInfoUi();
         setupImageInfoUi();
     }

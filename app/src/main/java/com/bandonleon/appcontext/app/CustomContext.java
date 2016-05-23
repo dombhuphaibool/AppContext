@@ -11,16 +11,23 @@ import com.bandonleon.appcontext.network.image.ImageLoader;
  */
 public abstract class CustomContext extends ContextWrapper {
 
+    private boolean mInitialized;
     private Api mApi;
     private ImageLoader mImageLoader;
 
     public CustomContext(Context baseContext) {
         super(baseContext);
+        mInitialized = false;
     }
 
     public void init() {
         recreateApi();
         recreateImageLoader();
+        mInitialized = true;
+    }
+
+    public boolean isInitialized() {
+        return mInitialized;
     }
 
     protected void recreateApi() {
