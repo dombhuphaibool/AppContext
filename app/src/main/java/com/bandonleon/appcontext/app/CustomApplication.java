@@ -2,6 +2,7 @@ package com.bandonleon.appcontext.app;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.bandonleon.appcontext.network.api.Api;
 import com.bandonleon.appcontext.network.api.volley.ApiVolley;
@@ -71,12 +72,12 @@ public class CustomApplication extends Application {
     protected CustomContext createCustomContext(Context base) {
         return new CustomContext(base) {
             @Override
-            protected Api createApi() {
+            protected @NonNull Api createApi() {
                 return new ApiVolley(getApplicationContext());
             }
 
             @Override
-            protected ImageLoader createImageLoader() {
+            protected @NonNull ImageLoader createImageLoader() {
                 return new VolleyImageLoader(getApplicationContext());
             }
         };

@@ -2,6 +2,7 @@ package com.bandonleon.appcontext.app.exchangeable;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 
 import com.android.volley.toolbox.Volley;
 import com.bandonleon.appcontext.R;
@@ -106,11 +107,11 @@ public class ExchangeableApiContext extends CustomContext {
         return api;
     }
 
-    private Api createApiVolley() {
+    private @NonNull Api createApiVolley() {
         return new ApiVolley(getApplicationContext());
     }
 
-    private Api createApiRetrofit() {
+    private @NonNull Api createApiRetrofit() {
         return new ApiRetrofit();
     }
 
