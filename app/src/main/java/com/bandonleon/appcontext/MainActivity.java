@@ -13,36 +13,60 @@ import android.widget.TextView;
 import com.bandonleon.appcontext.app.CustomApplication;
 import com.bandonleon.appcontext.app.NetworkUtil;
 import com.bandonleon.appcontext.app.exchangeable.ExchangeableApiApplication;
+import com.bandonleon.appcontext.context.CustomContext;
+import com.bandonleon.appcontext.context.ResourceType;
+import com.bandonleon.appcontext.context.ResourceTypes;
 import com.bandonleon.appcontext.network.api.Api;
 
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CustomContext.ResourcesListener {
     TextView mOutputTxt;
     ImageView mImageView;
+    Button mApiCallBtn;
+    Button mImageCallBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        CustomApplication.initCustomContext();
-        
         setupApiInfoUi();
         setupImageInfoUi();
+
+        // @TODO: Maybe show a loading spinner as feedback also?
+
+        @ResourceTypes int resources = ResourceType.API | ResourceType.IMAGE_LOADER;
+        CustomApplication.waitForResources(resources, this, true);
+    }
+
+    @Override
+    public void onResourcesReady() {
+        if (mApiCallBtn != null) {
+            mApiCallBtn.setEnabled(true);
+        }
+        if (mImageCallBtn != null) {
+            mImageCallBtn.setEnabled(true);
+        }
+    }
+
+    @Override
+    public void onResourcesError() {
+        // TODO: Handle errors here...
     }
 
     private void setupApiInfoUi() {
         mOutputTxt = (TextView) findViewById(R.id.output_txt);
 
-        Button callButton = (Button) findViewById(R.id.btn_api_call);
-        if (callButton != null) {
-            callButton.setOnClickListener(new View.OnClickListener() {
+        mApiCallBtn = (Button) findViewById(R.id.btn_api_call);
+        if (mApiCallBtn != null) {
+            mApiCallBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     callApi();
                 }
             });
+            mApiCallBtn.setEnabled(false);
         }
 
         Spinner networkSpinner = (Spinner) findViewById(R.id.network_spinner);
@@ -71,14 +95,15 @@ public class MainActivity extends AppCompatActivity {
     private void setupImageInfoUi() {
         mImageView = (ImageView) findViewById(R.id.image_view);
 
-        Button imageCallButton = (Button) findViewById(R.id.btn_image_call);
-        if (imageCallButton != null) {
-            imageCallButton.setOnClickListener(new View.OnClickListener() {
+        mImageCallBtn = (Button) findViewById(R.id.btn_image_call);
+        if (mImageCallBtn != null) {
+            mImageCallBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     loadImage();
                 }
             });
+            mImageCallBtn.setEnabled(false);
         }
 
         Spinner imageSpinner = (Spinner) findViewById(R.id.image_spinner);

@@ -3,7 +3,7 @@ package com.bandonleon.appcontext.app.exchangeable;
 import android.content.Context;
 
 import com.bandonleon.appcontext.app.CustomApplication;
-import com.bandonleon.appcontext.app.CustomContext;
+import com.bandonleon.appcontext.context.CustomContext;
 
 /**
  * Created by dombhuphaibool on 5/12/16.

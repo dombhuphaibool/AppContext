@@ -4,9 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.bandonleon.appcontext.network.api.Api;
+import com.bandonleon.appcontext.context.CustomContext;
+import com.bandonleon.appcontext.context.ResourceType;
 import com.bandonleon.appcontext.network.api.volley.ApiVolley;
-import com.bandonleon.appcontext.network.image.ImageLoader;
 import com.bandonleon.appcontext.network.image.volley.VolleyImageLoader;
 
 /**
@@ -29,25 +29,15 @@ public class CustomApplication extends Application {
         if (context == null || !(context instanceof CustomContext)) {
             throw new IllegalStateException("CustomApplication's context is null or not a CustomContext");
         }
-        CustomContext customContext = (CustomContext) context;
-        if (!customContext.isInitialized()) {
-            customContext.init();
-        }
-        return customContext;
+        return (CustomContext) context;
     }
 
-    /**
-     * Components should call this method if they are going to use the CustomContext. This will
-     * allow initialization of the CustomContext to be done in advance. However, if the components
-     * do not call this method in advance, when it calls getCustomContext(), the initialization
-     * will happen lazily. This allows components that do not use the CustomContext resources to
-     * avoid the overhead of creating resources that it will not use (ie, if the BroadcastReceiver
-     * will not use something in the the CustomContext, etc.
-     *
-     * For components that will use the CustomContext, this method should be called in its onCreate().
-     */
-    public static void initCustomContext() {
-        getCustomContext();
+    // @TODO: We can either do this or expose access to the CustomContext
+    public static void waitForResources(@ResourceType int resources, CustomContext.ResourcesListener listener) {
+        waitForResources(resources, listener, true);
+    }
+    public static void waitForResources(@ResourceType int resources, CustomContext.ResourcesListener listener, boolean throwOnError) {
+        getInstance().getCustomContext().waitForResources(resources, listener, throwOnError);
     }
 
     @Override
@@ -70,16 +60,41 @@ public class CustomApplication extends Application {
      * @return A CustomContext
      */
     protected CustomContext createCustomContext(Context base) {
-        return new CustomContext(base) {
+        CustomContext customContext = new CustomContext(base);
+        customContext.addResource(new CustomContext.ResourceDescription() {
             @Override
-            protected @NonNull Api createApi() {
-                return new ApiVolley(getApplicationContext());
+            public int getId() {
+                return ResourceType.API;
             }
 
             @Override
-            protected @NonNull ImageLoader createImageLoader() {
+            public boolean useMainThreadForCreation() {
+                return true;
+            }
+
+            @NonNull
+            @Override
+            public Object create() {
+                return new ApiVolley(getApplicationContext());
+            }
+        });
+        customContext.addResource(new CustomContext.ResourceDescription() {
+            @Override
+            public int getId() {
+                return ResourceType.IMAGE_LOADER;
+            }
+
+            @Override
+            public boolean useMainThreadForCreation() {
+                return true;
+            }
+
+            @NonNull
+            @Override
+            public Object create() {
                 return new VolleyImageLoader(getApplicationContext());
             }
-        };
+        });
+        return customContext;
     }
 }
