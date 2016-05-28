@@ -6,14 +6,21 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * Created by dombhuphaibool on 5/10/16.
  */
 @MainThread
-public class CustomContext extends ContextWrapper {
+public class CustomContext extends ContextWrapper implements ResourceCreationListener {
 
     public interface ResourcesListener {
         void onResourcesReady();
@@ -77,9 +84,7 @@ public class CustomContext extends ContextWrapper {
         if ((mResourcesReady & resources) == resources) {
             listener.onResourcesReady();
         } else {
-            if (ensureResouresAreReady(resources, listener)) {
-                // TODO: Start a thread to wait on a CountdownLatch and then call the line below...
-                listener.onResourcesReady();
+            if (ensureResouresAreReady(resources, listener) > 0) {
             } else {
                 // Internal error! mResourcesReady flag doesn't properly match the state
                 // of resources that are ready.
@@ -95,44 +100,44 @@ public class CustomContext extends ContextWrapper {
         }
     }
 
-    private boolean ensureResouresAreReady(@ResourceTypes int resources, ResourcesListener listener) {
-        boolean resourcesNotReadyFound = false;
+    private int ensureResouresAreReady(@ResourceTypes int resources, ResourcesListener listener) {
+        List<ContextResource> resourcesToCreate = new ArrayList<>();
+        // TODO: We can probably use Java 8 streaming api to filter what we need here...
         for (ContextResource contextResource : mResources.values()) {
-            ResourceDescription resourceDesc = contextResource.getDescription();
-            @ResourceTypes int id = resourceDesc.getId();
+            // ResourceDescription resourceDesc = contextResource.getDescription();
+            @ResourceTypes int id = contextResource.getDescription().getId();
             if ((resources & id) == id && contextResource.getResource() == null) {
-                resourcesNotReadyFound = true;
-                if (contextResource.isCreationInProgress()) {
-                    // @TODO: attach a listener to the task
-                } else {
-                    recreateResourceInternal(resourceDesc);
-                }
+                resourcesToCreate.add(contextResource);
             }
         }
-        return resourcesNotReadyFound;
+
+        int numResourcesToCreate = resourcesToCreate.size();
+        CountDownLatch readySignal = new CountDownLatch(numResourcesToCreate);
+        for (ContextResource contextResource : resourcesToCreate) {
+            if (contextResource.isCreationInProgress()) {
+                contextResource.addWaiter(readySignal);
+            } else {
+                contextResource.create(mTaskExecutor, readySignal, this);
+            }
+        }
+
+        // TODO: Start a thread to wait on a CountdownLatch and then call the line below...
+        listener.onResourcesReady();
+
+        return numResourcesToCreate;
     }
 
     protected void recreateResource(@ResourceType int type) {
         if (!mResources.containsKey(type)) {
             throw new IllegalStateException("ResourceDescription with id: " + type + " does not exist. Did you forget to call addResource()?");
         }
-        recreateResourceInternal(mResources.get(type).getDescription());
+        mResources.get(type).create(mTaskExecutor, null, this);
     }
 
-    private void recreateResourceInternal(@NonNull ResourceDescription resourceDesc) {
-        if (resourceDesc.useMainThreadForCreation()) {
-            Object resource = resourceDesc.create();
-            resourceRecreated(resourceDesc.getId(), resource);
-        } else {
-            // @TODO: Create this resource on a worker thread...
-            // e.g., call resourceDesc.create() on a worker thread...
+    private ExecutorService mTaskExecutor;
 
-            // @TODO: Call resrouceRecreated() when completed...
-        }
-    }
-
-    private void resourceRecreated(@ResourceType int type, Object resource) {
-        mResources.get(type).setResource(resource);
+    @Override
+    public void onResourceCreated(@ResourceType int type) {
         mResourcesReady |= type;
     }
 
@@ -146,7 +151,8 @@ public class CustomContext extends ContextWrapper {
     private static class ContextResource {
         private final ResourceDescription mDescription;
         private Object mResource;
-        private Runnable mCreationTask;
+        private Future<Object> mCreationTask;
+        private List<CountDownLatch> mWaiters;
 
         public ContextResource(@NonNull ResourceDescription desc) {
             mDescription = desc;
@@ -154,8 +160,29 @@ public class CustomContext extends ContextWrapper {
             mCreationTask = null;
         }
 
-        private void setResource(Object resource) {
-            mResource = resource;
+        private void create(ExecutorService taskExecutor, final CountDownLatch readySignal, final ResourceCreationListener listener) {
+            if (mDescription.useMainThreadForCreation()) {
+                mResource = mDescription.create();
+                listener.onResourceCreated(mDescription.getId());
+            } else {
+                Future<Object> creatorTask = taskExecutor.submit(new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        Object resource = mDescription.create();
+                        if (readySignal != null) {
+                            readySignal.countDown();
+                        }
+                        return resource;
+                    }
+                });
+
+                // @TODO: Create this resource on a worker thread...
+                // e.g., call resourceDesc.create() on a worker thread...
+
+                // @TODO: Call resrouceRecreated() when completed...
+                // mResource =
+                // listener.onResourceCreated()
+            }
         }
 
         private @NonNull ResourceDescription getDescription() {
@@ -168,6 +195,33 @@ public class CustomContext extends ContextWrapper {
 
         private boolean isCreationInProgress() {
             return mCreationTask != null;
+        }
+
+        private void addWaiter(CountDownLatch waiter) {
+            if (mWaiters == null) {
+                mWaiters = new ArrayList<>();
+            }
+            mWaiters.add(waiter);
+        }
+
+        private void completeCreation() {
+            if (mCreationTask == null) {
+                throw new IllegalStateException("Cannot call completeCreation when there's no pending task");
+            }
+
+            try {
+                mResource = mCreationTask.get();
+            } catch (InterruptedException interruptedEx) {
+                // Ignore exception
+            } catch (ExecutionException executionEx) {
+                // Ignore exception
+            }
+
+            for (CountDownLatch waiter : mWaiters) {
+                waiter.countDown();
+            }
+            mWaiters.clear();
+            mWaiters = null;
         }
     }
 }
