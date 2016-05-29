@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.bandonleon.appcontext.R;
 import com.bandonleon.appcontext.context.CustomContext;
+import com.bandonleon.appcontext.context.CustomContext.ResourceDescription;
 import com.bandonleon.appcontext.context.ResourceType;
 import com.bandonleon.appcontext.network.api.Api;
 import com.bandonleon.appcontext.network.api.retrofit.ApiRetrofit;
@@ -17,9 +18,10 @@ import com.bandonleon.appcontext.network.image.picasso.PicassoImageLoader;
 import com.bandonleon.appcontext.network.image.volley.VolleyImageLoader;
 
 /**
- * Created by dombhuphaibool on 5/12/16.
+ * Created by dom on 5/28/16.
  */
-public class ExchangeableApiContext extends CustomContext {
+public class ResourcesManager {
+
     private enum ApiType {
         Volley,
         Retrofit
@@ -39,24 +41,27 @@ public class ExchangeableApiContext extends CustomContext {
     private final String mImageLoaderGlideStr;
     private final String mImageLoaderFrescoStr;
 
-    public ExchangeableApiContext(Context baseContext) {
-        super(baseContext);
-
-        Resources res = getResources();
+    public ResourcesManager(@NonNull Context context) {
+        Resources res = context.getResources();
         mApiVolleyStr = res.getString(R.string.network_api_volley);
         mApiRetrofitStr = res.getString(R.string.network_api_retrofit);
         mImageLoaderVolleyStr = res.getString(R.string.image_loader_volley);
         mImageLoaderPicassoStr = res.getString(R.string.image_loader_piccaso);
         mImageLoaderGlideStr = res.getString(R.string.image_loader_glide);
         mImageLoaderFrescoStr = res.getString(R.string.image_loader_fresco);
-
-        addResource(new ApiModule(baseContext));
-        addResource(new ImageLoaderModule(baseContext));
     }
 
-    void setApiType(String apiTypeStr) {
+    public ResourceDescription createApiModule(@NonNull Context context) {
+        return new ApiModule(context);
+    }
+
+    public ResourceDescription createImageLoaderModule(@NonNull Context context) {
+        return new ImageLoaderModule(context);
+    }
+
+    public void setApiType(@NonNull CustomContext customContext, String apiTypeStr) {
         boolean apiChanged = true;
-        ApiModule apiModule = (ApiModule) getResourceDescription(ResourceType.API);
+        ApiModule apiModule = (ApiModule) customContext.getResourceDescription(ResourceType.API);
         ApiType apiType = apiModule.getApiType();
         if (mApiVolleyStr.equals(apiTypeStr) && apiType != ApiType.Volley) {
             apiType = ApiType.Volley;
@@ -68,13 +73,13 @@ public class ExchangeableApiContext extends CustomContext {
 
         if (apiChanged) {
             apiModule.setApiType(apiType);
-            recreateResource(ResourceType.API);
+            customContext.recreateResourceOnMainThread(ResourceType.API);
         }
     }
 
-    void setImageLoaderType(String imgLoaderTypeStr) {
+    public void setImageLoaderType(@NonNull CustomContext customContext, String imgLoaderTypeStr) {
         boolean imageLoaderChanged = true;
-        ImageLoaderModule imgLoaderModule = (ImageLoaderModule) getResourceDescription(ResourceType.IMAGE_LOADER);
+        ImageLoaderModule imgLoaderModule = (ImageLoaderModule) customContext.getResourceDescription(ResourceType.IMAGE_LOADER);
         ImageLoaderType imgLoaderType = imgLoaderModule.getImageLoaderType();
         if (mImageLoaderVolleyStr.equals(imgLoaderTypeStr) && imgLoaderType != ImageLoaderType.Volley) {
             imgLoaderType = ImageLoaderType.Volley;
@@ -90,7 +95,7 @@ public class ExchangeableApiContext extends CustomContext {
 
         if (imageLoaderChanged) {
             imgLoaderModule.setImageLoaderType(imgLoaderType);
-            recreateResource(ResourceType.IMAGE_LOADER);
+            customContext.recreateResourceOnMainThread(ResourceType.IMAGE_LOADER);
         }
     }
 

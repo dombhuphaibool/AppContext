@@ -37,11 +37,11 @@ public class MainActivity extends AppCompatActivity implements CustomContext.Res
         // @TODO: Maybe show a loading spinner as feedback also?
 
         @ResourceTypes int resources = ResourceType.API | ResourceType.IMAGE_LOADER;
-        CustomApplication.waitForResources(resources, this, true);
+        CustomApplication.getCustomContext().waitForResources(resources, this, true);
     }
 
     @Override
-    public void onResourcesReady() {
+    public void onResourcesReady(@ResourceTypes int resources) {
         if (mApiCallBtn != null) {
             mApiCallBtn.setEnabled(true);
         }
@@ -51,8 +51,12 @@ public class MainActivity extends AppCompatActivity implements CustomContext.Res
     }
 
     @Override
-    public void onResourcesError() {
-        // TODO: Handle errors here...
+    public boolean onResourcesError(String error) {
+        if (mOutputTxt != null) {
+            mOutputTxt.setText("Error initializing resources: " +
+                    error + " - Please restart the app...");
+        }
+        return true;
     }
 
     private void setupApiInfoUi() {

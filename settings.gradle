@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':custom-context', ':test-app'
 include ':volley'
