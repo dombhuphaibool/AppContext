@@ -1,33 +1,38 @@
 package com.bandonleon.appcontext.app.exchangeable;
 
-import android.content.Context;
-
-import com.bandonleon.appcontext.app.CustomApplication;
-import com.bandonleon.appcontext.app.CustomContext;
+import com.bandonleon.appcontext.app.MainApplication;
+import com.bandonleon.appcontext.context.CustomContext;
+import com.bandonleon.appcontext.context.ResourceType;
 
 /**
  * Created by dombhuphaibool on 5/12/16.
  */
-public class ExchangeableApiApplication extends CustomApplication {
+public class ExchangeableApiApplication extends MainApplication {
 
+    private static ExchangeableApiApplication sAppInstance;
+
+    // TODO: Clean this up!
     public static void switchNetworkApi(String apiTypeStr) {
-        CustomContext customContext = CustomApplication.getCustomContext();
-        if (customContext instanceof ExchangeableApiContext) {
-            ExchangeableApiContext exchangeableApiContext = (ExchangeableApiContext) customContext;
-            exchangeableApiContext.setApiType(apiTypeStr);
-        }
+        sAppInstance.mResourcesManager.setApiType(getCustomContext(), apiTypeStr);
     }
 
+    // TODO: Clean this up!
     public static void switchImageLoader(String imageLoaderTypeStr) {
-        CustomContext customContext = CustomApplication.getCustomContext();
-        if (customContext instanceof ExchangeableApiContext) {
-            ExchangeableApiContext exchangeableApiContext = (ExchangeableApiContext) customContext;
-            exchangeableApiContext.setImageLoaderType(imageLoaderTypeStr);
-        }
+        sAppInstance.mResourcesManager.setImageLoaderType(getCustomContext(), imageLoaderTypeStr);
+    }
+
+    private ResourcesManager mResourcesManager;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        sAppInstance = this;
+        mResourcesManager = new ResourcesManager(getApplicationContext());
     }
 
     @Override
-    protected CustomContext createCustomContext(Context base) {
-        return new ExchangeableApiContext(base);
+    protected void addResourcesDescription(CustomContext customContext) {
+        customContext.addResource(mResourcesManager.createApiModule(customContext));
+        customContext.addResource(mResourcesManager.createImageLoaderModule(customContext));
     }
 }

@@ -1,5 +1,7 @@
 package com.bandonleon.appcontext.app;
 
+import com.bandonleon.appcontext.context.CustomContext;
+import com.bandonleon.appcontext.context.ResourceType;
 import com.bandonleon.appcontext.network.api.Api;
 import com.bandonleon.appcontext.network.image.ImageLoader;
 
@@ -8,7 +10,7 @@ import com.bandonleon.appcontext.network.image.ImageLoader;
  */
 public class NetworkUtil {
     public static Api getApi(CustomContext context) {
-        return context.getApi();
+        return (Api) context.getResource(ResourceType.API);
     }
 
     public static Api getApi() {
@@ -16,7 +18,7 @@ public class NetworkUtil {
     }
 
     public static ImageLoader getImageLoader(CustomContext context) {
-        return context.getImageLoader();
+        return (ImageLoader) context.getResource(ResourceType.IMAGE_LOADER);
     }
 
     public static ImageLoader getImageLoader() {
