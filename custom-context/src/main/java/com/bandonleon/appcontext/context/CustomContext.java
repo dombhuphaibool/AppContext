@@ -73,10 +73,15 @@ public class CustomContext extends ContextWrapper implements ResourceCreationLis
      * @param description - A resource description
      */
     public void addResource(@NonNull ResourceDescription description) {
-        if (mResources.containsKey(description.getId())) {
+        @ResourceType int id = description.getId();
+        if (!validateDescriptionId(id)) {
+            throw new IllegalStateException("ResourceDesctiption has invalid id. Id must contain only one bit set.");
+        } else if (mResources.containsKey(id)) {
             throw new IllegalStateException("ResourceDescription with id: " + description.getId() + " already exists");
+        } else if (mResources.size() >= Integer.SIZE) {
+            throw new IllegalStateException("No more ResourceDescription can be added. Maximum capacity of " + Integer.SIZE + " has been reached.");
         }
-        mResources.put(description.getId(), new ContextResource(description));
+        mResources.put(id, new ContextResource(description));
     }
 
     /**
@@ -144,6 +149,16 @@ public class CustomContext extends ContextWrapper implements ResourceCreationLis
     @Override
     public void onResourceCreated(@ResourceType int type) {
         mResourcesReady |= type;
+    }
+
+    /**
+     *
+     * @param id
+     * @return true if id has only one bit set, otherwise false
+     */
+    private boolean validateDescriptionId(@ResourceType int id) {
+        int idAsInt = (int) id;
+        return (idAsInt > 0) && (idAsInt == (idAsInt & -idAsInt));
     }
 
     private @NonNull ContextResource getContextResource(@ResourceType int type) {
@@ -301,11 +316,13 @@ public class CustomContext extends ContextWrapper implements ResourceCreationLis
             } finally {
                 mCreationTask = null;
 
-                for (CountDownLatch waiter : mWaiters) {
-                    waiter.countDown();
+                if (mWaiters != null) {
+                    for (CountDownLatch waiter : mWaiters) {
+                        waiter.countDown();
+                    }
+                    mWaiters.clear();
+                    mWaiters = null;
                 }
-                mWaiters.clear();
-                mWaiters = null;
 
                 resourcesCreatedSignal.countDown();
             }
