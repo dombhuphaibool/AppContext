@@ -1,4 +1,4 @@
-package com.example.appcontexttestapplication;
+package com.bandonleon.appcontext.test;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
