@@ -118,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements CustomContext.Res
             imageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (mImageView != null) {
+                        mImageView.setImageResource(0);
+                    }
                     String imageLoaderStr = parent.getItemAtPosition(position).toString();
                     ExchangeableApiApplication.switchImageLoader(imageLoaderStr);
                 }
@@ -150,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements CustomContext.Res
 
     private void loadImage() {
         if (mImageView != null) {
-            String url = "http://developer.android.com/images/training/system-ui.png";
+            String url = "http://r.ddmcdn.com/s_f/o_1/cx_633/cy_0/cw_1725/ch_1725/w_720/APL/uploads/2014/11/too-cute-doggone-it-video-playlist.jpg";
             NetworkUtil.getImageLoader().load(url, mImageView);
         }
     }

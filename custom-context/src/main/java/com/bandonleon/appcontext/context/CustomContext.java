@@ -253,6 +253,7 @@ public class CustomContext extends ContextWrapper implements ResourceCreationLis
 
             if (mDescription.useMainThreadForCreation()) {
                 recreateOnMainThread(creationListener);
+                resourcesCreatedSignal.countDown();
             } else {
                 mResource = null;
                 mCreationTask = taskExecutor.submit(new Callable<Object>() {
