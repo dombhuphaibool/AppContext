@@ -27,11 +27,11 @@ public class ExchangeableApiApplication extends MainApplication {
     public void onCreate() {
         super.onCreate();
         sAppInstance = this;
-        mResourcesManager = new ResourcesManager(getApplicationContext());
     }
 
     @Override
     protected void addResourcesDescription(CustomContext customContext) {
+        mResourcesManager = new ResourcesManager(customContext);
         customContext.addResource(mResourcesManager.createApiModule(customContext));
         customContext.addResource(mResourcesManager.createImageLoaderModule(customContext));
     }
